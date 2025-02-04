@@ -1,25 +1,23 @@
 package com.business.BizNest.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Set;
 
 @Entity
+@Table(name = "permissions")
 @Data
-@Table(name = "roles")
-public class Role {
+public class Permission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long roleId;
+    private Long permissionId;
 
-    private String roleName;
+    private String permissionName;
 
     private String description;
 
-    @ManyToMany(mappedBy = "roles")
-    @JsonIgnore
+    @ManyToMany(mappedBy = "permissions")
     private Set<User> users;
 }
