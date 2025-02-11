@@ -5,7 +5,10 @@ import lombok.*;
 
 @Entity
 @Table(name = "user_roles")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserRole {
 
     @Id

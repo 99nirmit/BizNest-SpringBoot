@@ -1,5 +1,8 @@
 package com.business.BizNest.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,7 +10,10 @@ import java.util.Set;
 
 @Entity
 @Table(name = "permissions")
-@Data
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Permission {
 
     @Id
@@ -20,4 +26,9 @@ public class Permission {
 
     @ManyToMany(mappedBy = "permissions")
     private Set<User> users;
+
+    @JsonCreator
+    public Permission(@JsonProperty("permissionName") String permissionName){
+        this.permissionName = permissionName;
+    }
 }
