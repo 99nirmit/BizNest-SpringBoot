@@ -1,15 +1,18 @@
 package com.business.BizNest.utils;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +22,14 @@ public class JwtUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
-    private String SECRET_KEY = "Tak+HaV^uvCHEFsEVfypW#7g9^k*Z8$V";
+    @Value("${spring.app.jwtSecret}")
+    private String jwtSecret;
 
-    private SecretKey getSigningKey(){
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    @Value("${spring.app.jwtExpirationMs}")
+    private int jwtExpirationsMs ;
+
+    private SecretKey key(){
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
     public String getJwtFromHeader(HttpServletRequest request){
@@ -49,8 +56,8 @@ public class JwtUtil {
                 .header().empty().add("typ", "jwt")
                 .and()
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-                .signWith(getSigningKey())
+                .expiration(new Date((new Date()).getTime() + jwtExpirationsMs))
+                .signWith(key())
                 .compact();
     }
 
@@ -58,13 +65,13 @@ public class JwtUtil {
         try {
             System.out.println("Validate");
             Jwts.parser()
-                    .verifyWith(getSigningKey())
+                    .setSigningKey(key())
                     .build()
-                    .parseSignedClaims(token)
+                    .parseClaimsJws(token)
                     .getPayload();
             return true;
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        } catch (JwtException e) {
+            throw new RuntimeException("JWT Validation failed: " + e.getMessage(), e);
         }
     }
 
@@ -74,15 +81,14 @@ public class JwtUtil {
 
     public Claims extractALlClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .setSigningKey(key())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public String extractEmail(String token){
         return extractALlClaims(token).getSubject();
     }
-
 
 }

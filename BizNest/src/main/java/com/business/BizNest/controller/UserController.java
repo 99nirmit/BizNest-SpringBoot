@@ -24,7 +24,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/")
-    public List<User> getALlUser(){
+    public List<UserDetailDTO> getALlUser(){
         return userService.getAllUsers();
     }
 
@@ -37,7 +37,7 @@ public class UserController {
     public ResponseEntity<UserDetailDTO> createUser(@RequestBody UserCreationRequestDto request){
         User user = new User();
         user.setName(request.getName());
-        user.setUserName(request.getUsername());
+        user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setPhoneNumber(request.getPhoneNumber());

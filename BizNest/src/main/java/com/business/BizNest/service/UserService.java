@@ -10,6 +10,8 @@ import com.business.BizNest.repository.PermissionRepository;
 import com.business.BizNest.repository.RoleRepository;
 import com.business.BizNest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,10 +34,34 @@ public class UserService {
     private PermissionRepository permissionRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    public PasswordEncoder passwordEncoder;
 
-    public List<User> getAllUsers(){
-        return userRepository.findAll();
+
+    public List<UserDetailDTO> getAllUsers(){
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    UserDetailDTO dto = new UserDetailDTO();
+                    dto.setName(user.getName());
+                    dto.setUsername(user.getUsername());
+                    dto.setId(user.getId());
+                    dto.setEmail(user.getEmail());
+                    dto.setPassword(user.getPassword());
+                    dto.setPhoneNumber(user.getPhoneNumber());
+
+//                    create RoleDto set
+                    Set<RoleDto> roleDtos = user.getRoles().stream()
+                            .map(role -> new RoleDto(role.getRoleId(), role.getRoleName()))
+                            .collect(Collectors.toSet());
+                    dto.setRoles(roleDtos);
+
+//                    create PermissionDto Set
+                    Set<PermissionDto> permissionDtos = user.getPermissions().stream()
+                            .map(permission -> new PermissionDto(permission.getPermissionId(), permission.getPermissionName()))
+                            .collect(Collectors.toSet());
+                    dto.setPermissions(permissionDtos);
+
+                    return dto;
+                }).collect(Collectors.toList());
     }
 
     public Optional<User> getUserById(Long id){
@@ -55,7 +81,7 @@ public class UserService {
 
     public User updateUser(User user){
 
-        User updtaedUser = userRepository.findByUserName(user.getUserName());
+        User updtaedUser = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("Id Not Found"));
         updtaedUser.setEmail(user.getEmail());
         updtaedUser.setPassword(user.getPassword());
         updtaedUser.setName(user.getName());
@@ -95,7 +121,7 @@ public class UserService {
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
-        dto.setUsername(user.getUserName());
+        dto.setUsername(user.getUsername());
         dto.setPassword(user.getPassword());
 
         // Map Roles

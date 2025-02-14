@@ -35,16 +35,19 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader("Authorization");
+        logger.debug("Authorization Header: {}", authorizationHeader);
 
         try{
             String jwt = parseJwt(request);
+            logger.debug("Parsed JWT: {}", jwt);
             if(jwt != null && jwtUtils.validateJwtToken(jwt)){
+                logger.debug("JWT Validity: {}");
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails,  null, userDetails.getAuthorities());
-                logger.debug("Roles fro JWT:{}", userDetails.getAuthorities());
+                logger.debug("Roles fro JWT:{}" , userDetails.getAuthorities());
 
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
