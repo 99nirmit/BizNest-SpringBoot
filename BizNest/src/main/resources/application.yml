@@ -19,3 +19,6 @@ logging:
   level:
     root: INFO
     org.hibernate.SQL: DEBUG # Enables detailed Hibernate SQL logging
+
+scraper:
+  url: "https://sambandh.msme.gov.in/PPP_MonthlyLogs.aspx?di=832&fy=2024-25"

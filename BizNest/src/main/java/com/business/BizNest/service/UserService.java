@@ -64,8 +64,10 @@ public class UserService {
                 }).collect(Collectors.toList());
     }
 
-    public Optional<User> getUserById(Long id){
-        return userRepository.findById(id);
+    public UserDetailDTO getUserById(Long id){
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        return toUserDetailDto(user);
     }
 
     public UserDetailDTO createUser(User user, Set<String> roleName, Set<String> permissionName){
@@ -79,19 +81,33 @@ public class UserService {
         return toUserDetailDto(user);
     }
 
-    public User updateUser(User user){
+    public UserDetailDTO updateUser(Long id, User updatedUser){
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User Not Found with ID: " + id));
 
-        User updtaedUser = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("Id Not Found"));
-        updtaedUser.setEmail(user.getEmail());
-        updtaedUser.setPassword(user.getPassword());
-        updtaedUser.setName(user.getName());
-        updtaedUser.setRoles(user.getRoles());
-        updtaedUser.setPermissions(user.getPermissions());
+        existingUser.setUsername(updatedUser.getUsername());
+        existingUser.setName(updatedUser.getName());
 
-        return userRepository.save(updtaedUser);
+        // Encode password only if it has changed
+        if(!updatedUser.getPassword().equals(existingUser.getPassword())){
+            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+
+        // Update roles and permissions
+        existingUser.setRoles(getRoles(updatedUser.getRoles().stream()
+                .map(Role::getRoleName).collect(Collectors.toSet())));
+
+        existingUser.setPermissions(getPermission(updatedUser.getPermissions().stream()
+                .map(Permission::getPermissionName).collect(Collectors.toSet())));
+
+        userRepository.save(existingUser);
+        return toUserDetailDto(existingUser);
     }
 
     public void deleteById(Long id){
+        if(!userRepository.existsById(id)){
+            throw new RuntimeException("User Not Found with ID: " + id);
+        }
         userRepository.deleteById(id);
     }
 

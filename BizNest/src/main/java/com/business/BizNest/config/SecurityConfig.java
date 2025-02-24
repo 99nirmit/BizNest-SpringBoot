@@ -44,10 +44,13 @@ public class SecurityConfig {
 
                             // authentication
                             .requestMatchers("/api/auth/**",
-                                    "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**"
+                                    "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+                                    "api/users/create"
                             ).permitAll()
                             .requestMatchers("api/users/** ").authenticated()
                             .requestMatchers("api/users/").authenticated()
+                            .requestMatchers("api/scrapper/**").authenticated()
+                            .requestMatchers("api/scrapper/").authenticated()
                             .requestMatchers("/admin/**").hasAuthority("ADMIN")
                             .anyRequest().authenticated())
                     .csrf(AbstractHttpConfigurer::disable)

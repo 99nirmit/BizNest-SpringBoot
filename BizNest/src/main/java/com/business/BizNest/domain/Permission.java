@@ -31,4 +31,9 @@ public class Permission {
     public Permission(@JsonProperty("permissionName") String permissionName){
         this.permissionName = permissionName;
     }
+
+    public Permission(long id, String permissionName) {
+     this.permissionId = id;
+     this.permissionName = permissionName;
+    }
 }

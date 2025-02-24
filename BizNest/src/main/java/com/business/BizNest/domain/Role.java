@@ -25,4 +25,9 @@ public class Role {
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
     private Set<User> users;
+
+    public Role(long id, String roleName) {
+        this.roleId = id;
+        this.roleName = roleName;
+    }
 }
